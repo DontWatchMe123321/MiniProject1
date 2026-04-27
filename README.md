@@ -1,91 +1,36 @@
 # Image Restoration Mini Project
+## Identitas
+
+# Khalil Gibran Al Azhar
+# 5024241100
+
 
 ## Penjelasan Pipeline Restorasi
 
-Pipeline restorasi pada proyek ini bertujuan untuk memperbaiki kualitas citra berwarna yang terdegradasi oleh noise, kontras rendah, dan ketajaman yang berkurang. Seluruh proses dilakukan secara berurutan pada setiap channel warna (RGB).
+Proyek ini mengimplementasikan pipeline restorasi citra berwarna untuk memperbaiki kualitas gambar yang terdegradasi oleh noise, kontras rendah, dan kehilangan ketajaman. Proses dilakukan secara berurutan pada setiap channel warna (RGB) menggunakan pendekatan manual berbasis NumPy.
 
-### 1. Denoising — Median Filter (k = 5)
-Tahap pertama menggunakan median filter manual dengan kernel 5x5.
+Tahap pertama adalah denoising menggunakan median filter dengan kernel 5x5. Setiap piksel diproses dengan mengambil window lokal di sekitarnya, kemudian nilai-nilai dalam window tersebut diurutkan untuk mendapatkan nilai median sebagai pengganti piksel pusat. Metode ini dipilih karena efektif dalam menghilangkan noise tipe salt-and-pepper sekaligus mempertahankan struktur tepi (edge) objek. Penggunaan kernel 5x5 memungkinkan pengurangan noise yang cukup padat, meskipun dengan risiko sedikit menghaluskan detail halus.
 
-Prosesnya:
-- Setiap piksel diproses dengan mengambil window 5x5 di sekitarnya
-- Nilai dalam window di-flatten lalu diurutkan
-- Nilai median digunakan untuk menggantikan piksel pusat
+Setelah noise dikurangi, dilakukan penyesuaian kontras dan kecerahan menggunakan transformasi linear dengan parameter α = 1.2 dan β = 15. Transformasi ini bertujuan untuk meningkatkan perbedaan intensitas antar piksel sehingga detail yang sebelumnya kurang terlihat menjadi lebih jelas. Tahap ini penting karena proses denoising cenderung membuat citra terlihat lebih datar (low contrast).
 
-Alasan pemilihan:
-- Efektif untuk menghilangkan noise tipe salt-and-pepper
-- Lebih baik dalam menjaga edge dibandingkan rata-rata (mean filter)
-- Kernel 5x5 dipilih untuk menangani noise yang cukup padat tanpa terlalu mengaburkan detail
+Selanjutnya, Gaussian blur dengan kernel 3x3 dan sigma 1 diterapkan secara manual untuk menghasilkan versi citra yang lebih halus. Proses ini bukan bertujuan sebagai denoising utama, melainkan sebagai bagian dari metode sharpening. Citra hasil blur digunakan sebagai referensi untuk mengekstrak komponen frekuensi tinggi (detail) pada tahap berikutnya.
 
----
+Tahap sharpening dilakukan menggunakan metode unsharp masking. Dalam metode ini, dibuat sebuah mask yang merupakan selisih antara citra hasil penyesuaian kontras dengan citra hasil Gaussian blur. Mask tersebut kemudian ditambahkan kembali ke citra asli dengan faktor penguat (α = 0.8). Pendekatan ini memungkinkan peningkatan ketajaman secara terkontrol, sehingga detail dan edge menjadi lebih jelas tanpa memperkuat noise secara berlebihan.
 
-### 2. Contrast & Brightness Adjustment (α = 1.2, β = 15)
-Setelah denoising, citra cenderung kehilangan kontras. Oleh karena itu dilakukan penyesuaian intensitas:
+Untuk citra berwarna, seluruh proses dilakukan secara terpisah pada masing-masing channel Red, Green, dan Blue. Citra awal dibaca dalam format BGR kemudian dikonversi ke RGB sebelum dipisahkan menjadi tiga channel. Setelah masing-masing channel diproses menggunakan pipeline yang sama, ketiganya digabung kembali untuk menghasilkan citra akhir. Pendekatan ini sederhana dan efektif, meskipun dapat menyebabkan sedikit perubahan warna karena tidak mempertimbangkan hubungan antar channel.
 
-I_out = α * I_in + β
+Secara keseluruhan, urutan proses dalam pipeline ini adalah denoising menggunakan median filter, penyesuaian kontras dan kecerahan, Gaussian blur sebagai dasar sharpening, dan diakhiri dengan unsharp masking untuk meningkatkan ketajaman.
 
-Dengan:
-- α = 1.2 → meningkatkan kontras secara moderat
-- β = 15 → menambah kecerahan
+## Perbandingan visual
 
-Tahap ini membantu:
-- Memperjelas perbedaan intensitas
-- Mengangkat detail yang sebelumnya kurang terlihat
 
-### 3. Gaussian Blur (Kernel 3x3, σ = 1)
-Gaussian filter digunakan sebagai bagian dari proses sharpening.
-Karakteristik:
-- Kernel dibuat manual menggunakan distribusi Gaussian
-- Memberikan bobot lebih besar pada piksel pusat
-- Menghasilkan citra yang lebih halus (low-pass filtering)
-Hasil blur ini tidak digunakan sebagai output akhir, tetapi sebagai referensi untuk mengekstrak detail pada tahap berikutnya.
-
-### 4. Sharpening — Unsharp Masking (α = 0.8)
-Sharpening dilakukan dengan metode unsharp masking:
-
-1. Hitung mask:
-
-mask = image - blurred
-
-2. Tambahkan kembali mask:
-
-sharpened = image + α * mask
-
-Dengan α = 0.8:
-- Detail diperkuat secara moderat
-- Menghindari over-sharpening dan amplifikasi noise
-
-Tujuan:
-- Mengembalikan ketajaman yang hilang akibat denoising dan blur
-- Memperjelas edge dan tekstur
-
-### 5. Pemrosesan per Channel RGB
-Citra diproses sebagai berikut:
-- Dibaca dalam format BGR lalu dikonversi ke RGB
-- Dipisahkan menjadi channel Red, Green, dan Blue
-- Setiap channel diproses secara independen menggunakan pipeline yang sama
-- Hasil akhir digabung kembali menjadi citra berwarna
-
-Pendekatan ini menjaga fleksibilitas pemrosesan, meskipun dapat menyebabkan sedikit perubahan warna karena tidak mempertimbangkan korelasi antar channel.
-
-### Urutan Pipeline
-Denoising (Median Filter) → Contrast Adjustment → Gaussian Blur → Unsharp Masking → Merge Channel
 
 ## Analisis Singkat
 
-### Yang berhasil:
-- Median filter efektif mengurangi noise tanpa merusak struktur utama
-- Kombinasi contrast adjustment dan sharpening meningkatkan visibilitas detail
-- Unsharp masking dengan α rendah menghasilkan ketajaman yang natural
-- Pipeline berjalan baik untuk citra berwarna
+Hasil yang diperoleh menunjukkan bahwa median filter mampu mengurangi noise secara signifikan tanpa merusak struktur utama gambar. Penyesuaian kontras dan kecerahan berhasil meningkatkan visibilitas detail, sementara unsharp masking memberikan efek penajaman yang cukup natural. Kombinasi tahapan ini menghasilkan citra yang secara visual lebih bersih dan tajam dibandingkan citra awal.
 
-### Yang bisa ditingkatkan:
-- Performa masih lambat karena menggunakan loop Python
-- Contrast adjustment masih menggunakan fungsi OpenCV (belum manual)
-- Tidak menggunakan histogram equalization untuk peningkatan kontras yang lebih adaptif
-- Pemrosesan per channel RGB dapat menyebabkan distorsi warna ringan
+Namun demikian, terdapat beberapa keterbatasan dalam implementasi ini. Penggunaan loop Python dalam proses filtering menyebabkan performa yang relatif lambat untuk citra berukuran besar. Selain itu, penyesuaian kontras masih menggunakan fungsi dari OpenCV sehingga belum sepenuhnya manual. Pendekatan pemrosesan per channel RGB juga berpotensi menyebabkan distorsi warna ringan. Untuk pengembangan lebih lanjut, metode seperti histogram equalization manual atau pemrosesan pada ruang warna lain (misalnya luminance-based) dapat dipertimbangkan.
 
----
 
 ## Cara Menjalankan Program
 
