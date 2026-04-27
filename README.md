@@ -1,8 +1,8 @@
 # Image Restoration Mini Project
 ## Identitas
 
-# Khalil Gibran Al Azhar
-# 5024241100
+--Khalil Gibran Al Azhar
+--5024241100
 
 
 ## Penjelasan Pipeline Restorasi
