@@ -30,7 +30,7 @@ Secara keseluruhan, urutan proses dalam pipeline ini adalah denoising menggunaka
 ![input](input.png)
 
 ### Restored
-![RESTORED}(output_color_improved4.jpg)
+![RESTORED](output_color_improved4.jpg)
 
 ## Analisis Singkat
 
