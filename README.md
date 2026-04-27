@@ -23,7 +23,8 @@ Secara keseluruhan, urutan proses dalam pipeline ini adalah denoising menggunaka
 
 ## Perbandingan visual
 
-
+![ORIGINAL](original.png)
+![RESTORED}(output_color_improved4.jpg)
 
 ## Analisis Singkat
 
